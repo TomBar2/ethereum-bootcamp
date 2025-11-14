@@ -8,14 +8,16 @@ It provides a collection of cryptographic utilities commonly used in Ethereum, s
 
 const secp = require("ethereum-cryptography/secp256k1");
 const {toHex} = require("ethereum-cryptography/utils");
+const { hexToBytes } = require("ethereum-cryptography/utils");
 const {keccak256} = require("ethereum-cryptography/keccak");
+const {utf8ToBytes} = require("ethereum-cryptography/utils");
 
 // Create a brand-new random private key, and then get its equivalent public key + derive an address
 function generateKeys() {
 
     // Return Uint8Array (an array of 8-but unsigned integers) private key
     const privateKey = secp.utils.randomPrivateKey();
-    console.log('private key: ', privateKey);
+    // toHex returns a String
     console.log('private key (Hex): ', toHex(privateKey));
 
     // Return an Uint8Array, derived from the private key
@@ -37,7 +39,6 @@ function getAddress(publicKey) {
 
     // keccak256 returns Uint8Array in the length of 32
     const hashed = keccak256(byteSlice);
-    console.log('sliced public key hash using keccak256: ', hashed);
 
     // Ethereum address format takes the last 20 chars of the hashed public key
     const hashed_length = hashed.length;
@@ -46,7 +47,20 @@ function getAddress(publicKey) {
     // Add 0x in the beginning of the address string to match format
     const address = '0x' + toHex(slicedHash);
     console.log('Address: ', address);
+    console.log('\n');
     return address;
 }
 
-module.exports = {generateKeys};
+function hashMessage(message) {
+    const str = JSON.stringify(message);
+    const bytes = utf8ToBytes(str);
+    return keccak256(bytes) // Returns Uint8Array
+}
+
+function recoverKey(message, signature, recoveryBit) {
+    const hashedMessaged = hashMessage(message);
+    const byteSignature = hexToBytes(signature)
+    return secp.recoverPublicKey(hashedMessaged, byteSignature, recoveryBit);  // Returns Uint8Array
+}
+
+module.exports = {generateKeys, hashMessage, recoverKey, getAddress};

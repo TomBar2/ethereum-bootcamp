@@ -1,3 +1,6 @@
+const {toHex} = require("ethereum-cryptography/utils");
+const { hexToBytes } = require("ethereum-cryptography/utils");
+
 const express = require("express");
 const app = express();
 const cors = require("cors");
@@ -26,18 +29,26 @@ app.get("/balance/:address", (req, res) => {
 });
 
 app.post("/send", (req, res) => {
-  const {sender, recipient, amount} = req.body;
+  const {message, signature, recoveryBit} = req.body;
 
-  setInitialBalance(sender);
-  setInitialBalance(recipient);
+  const publicKeyBytes = utils.recoverKey(message, signature, recoveryBit)
+  const isAddress = utils.getAddress(publicKeyBytes)
 
-  if (balances[sender] < amount) {
-    res.status(400).send({message: "Not enough funds!"});
-  } else {
-    balances[sender] -= amount;
-    balances[recipient] += amount;
-    res.send({balance: balances[sender]});
+  if (message.sender === isAddress) {
+
+    setInitialBalance(isAddress);
+    setInitialBalance(message.recipient);
+
+    if (balances[message.sender] < message.amount) {
+      res.status(400).send({message: "Not enough funds!"});
+    } else {
+      balances[message.sender] -= message.amount;
+      balances[message.recipient] += message.amount;
+      res.send({balance: balances[message.sender]});
+    }
   }
+
+
 });
 
 app.listen(port, () => {
