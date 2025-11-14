@@ -6,30 +6,37 @@ const port = 3042;
 app.use(cors());
 app.use(express.json());
 
-const balances = {
-  "0x1": 100,
-  "0x2": 50,
-  "0x3": 75,
-};
+// Generate private and public key for each user
+const utils = require("./utils");
+
+const users = {}
+balances = {}
+
+for (let i = 0; i < 3; i++) {
+  const {privateKey, address} = utils.generateKeys();
+
+  users[address] = privateKey;
+  balances[address] = 100;
+}
 
 app.get("/balance/:address", (req, res) => {
-  const { address } = req.params;
+  const {address} = req.params;
   const balance = balances[address] || 0;
-  res.send({ balance });
+  res.send({balance});
 });
 
 app.post("/send", (req, res) => {
-  const { sender, recipient, amount } = req.body;
+  const {sender, recipient, amount} = req.body;
 
   setInitialBalance(sender);
   setInitialBalance(recipient);
 
   if (balances[sender] < amount) {
-    res.status(400).send({ message: "Not enough funds!" });
+    res.status(400).send({message: "Not enough funds!"});
   } else {
     balances[sender] -= amount;
     balances[recipient] += amount;
-    res.send({ balance: balances[sender] });
+    res.send({balance: balances[sender]});
   }
 });
 
