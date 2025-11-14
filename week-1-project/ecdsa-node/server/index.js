@@ -34,17 +34,21 @@ app.post("/send", (req, res) => {
   const publicKeyBytes = utils.recoverKey(message, signature, recoveryBit)
   const isAddress = utils.getAddress(publicKeyBytes)
 
-  if (message.sender === isAddress) {
+  const sender = message.sender;
+  const recipient = message.recipient;
+  const amount = message.amount;
 
-    setInitialBalance(isAddress);
-    setInitialBalance(message.recipient);
+  if (sender === isAddress) {
 
-    if (balances[message.sender] < message.amount) {
+    setInitialBalance(sender);
+    setInitialBalance(recipient);
+
+    if (balances[sender] < amount) {
       res.status(400).send({message: "Not enough funds!"});
     } else {
-      balances[message.sender] -= message.amount;
-      balances[message.recipient] += message.amount;
-      res.send({balance: balances[message.sender]});
+      balances[sender] -= amount;
+      balances[recipient] += amount;
+      res.send({balance: balances[sender]});
     }
   }
 

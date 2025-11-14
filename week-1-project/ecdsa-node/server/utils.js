@@ -6,11 +6,10 @@ It provides a collection of cryptographic utilities commonly used in Ethereum, s
 - etc...
  */
 
-const secp = require("ethereum-cryptography/secp256k1");
-const {toHex} = require("ethereum-cryptography/utils");
-const { hexToBytes } = require("ethereum-cryptography/utils");
+const {toHex, hexToBytes, utf8ToBytes} = require("ethereum-cryptography/utils");
 const {keccak256} = require("ethereum-cryptography/keccak");
-const {utf8ToBytes} = require("ethereum-cryptography/utils");
+const secp = require("ethereum-cryptography/secp256k1");
+
 
 // Create a brand-new random private key, and then get its equivalent public key + derive an address
 function generateKeys() {
@@ -57,10 +56,10 @@ function hashMessage(message) {
     return keccak256(bytes) // Returns Uint8Array
 }
 
-function recoverKey(message, signature, recoveryBit) {
+function recoverKey(message, signatureHex, recoveryBit) {
     const hashedMessaged = hashMessage(message);
-    const byteSignature = hexToBytes(signature)
-    return secp.recoverPublicKey(hashedMessaged, byteSignature, recoveryBit);  // Returns Uint8Array
+    const signatureBytes  = hexToBytes(signatureHex)
+    return secp.recoverPublicKey(hashedMessaged, signatureBytes, recoveryBit);  // Returns Uint8Array
 }
 
 module.exports = {generateKeys, hashMessage, recoverKey, getAddress};
