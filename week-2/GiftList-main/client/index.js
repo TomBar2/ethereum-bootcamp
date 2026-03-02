@@ -10,9 +10,15 @@ async function main() {
   const merkleTree = new MerkleTree(niceList);
 
   const name = niceList[0];
+  // The following name is not on the list
+  // const name = 'Shlomi';
   // console.log('name: ', name);
 
-  const proof = merkleTree.getProof(0);
+  // The indexOf() method in JavaScript is a built-in function,
+  // used on both arrays and strings to find the position (index) of the first occurrence of a specified value
+  const index = niceList.indexOf(name);
+
+  const proof = merkleTree.getProof(index);
   // console.log('proof: ', proof);
 
   const { data: gift } = await axios.post(`${serverUrl}/gift`, {
